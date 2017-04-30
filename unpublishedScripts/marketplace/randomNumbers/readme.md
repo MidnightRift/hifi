@@ -1,9 +1,7 @@
-# A numbers library staring with random numbers
 
+## Random()
 
-##Random()
-
-### how do i import it?
+### How do I import it?
 
 ```javascript
 
@@ -28,7 +26,7 @@ NP.fill(1,100);
 //picks a random number from the number pool
 NP.pick();
 
-// syntax sugar cales reset then fill;
+// syntax sugar calls reset then fill;
 NP.refill(1,100);
 
 // resets teh number pool
@@ -40,10 +38,10 @@ NP.reset();
 
 
 
-##Force
+## Force
 
 
-### how do i import it?
+### How do I import it?
 
 ```javascript
 
@@ -56,7 +54,7 @@ var F = new (Script.require('../lib/force.js')).Force();
 
 
 ```javascript
-// This will create a random con and random velocity between the range specified (entityRot,minSpeed,maxSpeed,minAngle,maxAngle)
+// This will create a random cone and random velocity between the range specified (entityRot,minSpeed,maxSpeed,minAngle,maxAngle)
 F.randomVelocity({'x': -0.08,'y': 0.47,'z': 0.04,'w': 0.87},1,5,5,10)
 ```
 
@@ -72,7 +70,7 @@ F.randomVelocity({'x': -0.08,'y': 0.47,'z': 0.04,'w': 0.87},1,5,5,10)
 ## numberServer - the Entity Server Script version.
 
 
-in general you will use the below to send messages to the server:
+In general you will use the below to send messages to the server:
 
 ```javascript
 // the default channel is game-channel
@@ -84,7 +82,7 @@ in general you will use the below to send messages to the server:
 
 ```
 
-This is an example of the requesting entites Messagesreceived so that it can process the requested methods results. (from bingo)
+This is an example of the requesting entities Messagesreceived so that it can process the requested methods results. (from bingo)
 
 ```javascript
     Messages.messageReceived.connect(function (channel, message, senderID) {
@@ -114,7 +112,7 @@ This is an example of the requesting entites Messagesreceived so that it can pro
 ```
 
 
-This is an example of the numberServer.js Messagesreceived
+This is an example of the numberServer.js Messagesreceived.
 
 ```javascript
     Messages.messageReceived.connect(function (channel, message, senderID) {
