@@ -1,3 +1,7 @@
+//
+// Created by Alan-Michael Moody on 5/2/2017
+//
+
 (function () {
     var NO_CACHE = Number(String(Math.random()).substring(2)).toString(16).substring(0,8);
     var R = new (Script.require('../lib/numbers.js?'+NO_CACHE)).Random();
@@ -18,7 +22,7 @@
     function roleDice(number) {
         var launcher = Entities.getEntityProperties(launcherID, ['position', 'rotation', 'dimensions']);
 
-        //ofset on Y the location teh dice spawn in
+        //offset on Y the location teh dice spawn in
         var fwd = Vec3.multiply(Quat.getUp(launcher.rotation), 0.11);
         var pos = Vec3.sum(launcher.position, fwd);
 

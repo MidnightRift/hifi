@@ -1,3 +1,7 @@
+//
+// Created by Alan-Michael Moody on 5/2/2017
+//
+
 (function () {
     var NO_CACHE = Number(String(Math.random()).substring(2)).toString(16).substring(0, 8);
     var ACTIVE_GAMES = {};
@@ -58,7 +62,6 @@
 
     });
 
-
     Script.setInterval(function () { // destroy inactive games.
         var gameKeys = Object.keys(ACTIVE_GAMES);
         var gamesCount = gameKeys.length;
@@ -71,6 +74,5 @@
             }
         }
     }, 120000);
-
 
 });

@@ -1,3 +1,7 @@
+//
+// Created by Alan-Michael Moody on 5/2/2017
+//
+
 ERRORS = [
     {code: 1, text: "No numbers left in number pool"},
     {code: 2, text: "requested function does not exist."},
@@ -16,7 +20,6 @@ function responder(data, json) {
     }
     return data;
 }
-
 
 module.exports = {
     ERRORS: ERRORS,

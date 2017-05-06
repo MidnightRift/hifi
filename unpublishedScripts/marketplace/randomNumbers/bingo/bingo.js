@@ -1,3 +1,7 @@
+//
+// Created by Alan-Michael Moody on 5/2/2017
+//
+
 (function () {
     var entityID = '';
     var NO_CACHE = Number(String(Math.random()).substring(2)).toString(16).substring(0, 8);
@@ -41,7 +45,6 @@
 
         print('Current call Bingo', letter + number);
     }
-
 
 
     this.clickDownOnEntity = function () {

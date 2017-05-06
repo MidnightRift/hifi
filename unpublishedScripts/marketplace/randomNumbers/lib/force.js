@@ -1,4 +1,7 @@
-// FORCE
+//
+// Created by Alan-Michael Moody on 5/2/2017
+//
+
 function Force() {
     var NO_CACHE = Number(String(Math.random()).substring(2)).toString(16).substring(0,8);
     var helper = Script.require('./helpers.js?'+NO_CACHE);
@@ -18,8 +21,6 @@ function Force() {
         return helper.responder(velocity);
     }
 }
-
-
 
 module.exports = {
     Force:Force
