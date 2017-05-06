@@ -36,8 +36,10 @@ function Random() {
             var rand = randomNumber(0, count - 1); // the -1 shifts the number space to 0-(n-1) from 1-n
 
             var num = pool[rand];
+            pool.splice(pool.indexOf(num), 1);
 
             print('Number Pool: ',JSON.stringify(pool));
+
 
             return helper.responder(num);
         };
