@@ -2570,6 +2570,18 @@ function MyController(hand) {
         this.grabRadius = this.grabbedDistance;
         this.grabRadialVelocity = 0.0;
 
+        this.reach = {
+            min: ((((HMD.playerHeight + 0.0508) * 0.75) / 2) - 0.0508) * 0.25,
+            max: (((HMD.playerHeight + 0.0508) * 0.75) / 2) - 0.0508,
+            core: function () {
+                function midpoint(v1, v2) {
+                    return {x: ((v1.x + v2.x) / 2), y: ((v1.y + v2.y) / 2), z: ((v1.z + v2.z) / 2)};
+                }
+                return midpoint(HMD.position,MyAvatar.getJointPosition("Hips"));
+            }
+        };
+
+
         // offset between controller vector at the grab radius and the entity position
         var targetPosition = Vec3.multiply(this.grabRadius, Quat.getUp(worldControllerRotation));
         targetPosition = Vec3.sum(targetPosition, worldControllerPosition);
@@ -2671,6 +2683,21 @@ function MyController(hand) {
             blendFactor = 1.0;
         }
         this.grabRadialVelocity = blendFactor * newRadialVelocity + (1.0 - blendFactor) * this.grabRadialVelocity;
+
+
+
+        var distToCore = Vec3.distance(worldControllerPosition, this.reach.core() );
+        var minReachZone = this.reach.min * 1.75;
+        var maxReachZone = this.reach.max * 0.9;
+        if(distToCore < minReachZone) {
+            this.grabRadialVelocity = -0.1 ;//+ this.grabRadialVelocity;
+            Controller.triggerShortHapticPulse(0.1, this.hand );
+        } else if(distToCore > maxReachZone) {
+            this.grabRadialVelocity = 0.1 ;//+ this.grabRadialVelocity;
+            Controller.triggerShortHapticPulse(0.1, this.hand );
+        }
+
+
 
         var RADIAL_GRAB_AMPLIFIER = 10.0;
         if (Math.abs(this.grabRadialVelocity) > 0.0) {
