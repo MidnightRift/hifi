@@ -2569,15 +2569,50 @@ function MyController(hand) {
 
         this.grabRadius = this.grabbedDistance;
         this.grabRadialVelocity = 0.0;
-
+        
+        // the width of a persons armspan is around there height
+        // the width of the shoulders is on average .25 the height.
+        // so we multiply height by .75 to get arms length and divide by 2 to get a single arm length
+        // the HMD height seams to be two inches off for me.
+        // i minus 2 inches from the grip as your palm is wrapped around a controller and not fully extended
+        // to get the core (there chest) i take the player height and times it .25 in the down direction.
+        var TWO_INCHES_IN_METERS = 0.0508;
+        var playerHeight = HMD.playerHeight + TWO_INCHES_IN_METERS;
+        var extents = {
+            x: 0.25,
+            y: 0.35,
+            z: 0.25
+        };
         this.reach = {
-            min: ((((HMD.playerHeight + 0.0508) * 0.75) / 2) - 0.0508) * 0.25,
-            max: (((HMD.playerHeight + 0.0508) * 0.75) / 2) - 0.0508,
+            min: ((( playerHeight * 0.75 ) / 2 ) - TWO_INCHES_IN_METERS) * 0.25,
+            max: (( playerHeight * 0.75 ) / 2 ) - TWO_INCHES_IN_METERS,
             core: function () {
-                function midpoint(v1, v2) {
-                    return {x: ((v1.x + v2.x) / 2), y: ((v1.y + v2.y) / 2), z: ((v1.z + v2.z) / 2)};
+                var hmdAdjustedPos = Vec3.sum(HMD.position, {x: 0, y: TWO_INCHES_IN_METERS, z: 0});
+                var VEC3_DOWN = Vec3.multiply(Vec3.UP, -1);
+                return Vec3.sum(hmdAdjustedPos, Vec3.multiply(VEC3_DOWN, playerHeight * 0.25));
+
+            },
+            zone: {
+                push: function (worldControllerPosition) {
+                    var inverseOrientation = Quat.inverse(MyAvatar.orientation);
+
+                    var localPos = Vec3.multiplyQbyV(inverseOrientation, Vec3.subtract(_this.reach.core(), worldControllerPosition));
+                    var min = {x: -extents.x * 2, y: -extents.y, z: _this.reach.max * 0.85 };
+                    var max = {x: extents.x * 2, y: extents.y, z: _this.reach.max * 1.2 };
+
+                    return (localPos.x > min.x && localPos.y > min.y && localPos.z > min.z &&
+                    localPos.x < max.x && localPos.y < max.y && localPos.z < max.z );
+                },
+                pull: function (worldControllerPosition) {
+                    var inverseOrientation = Quat.inverse(MyAvatar.orientation);
+
+                    var localPos = Vec3.multiplyQbyV(inverseOrientation, Vec3.subtract(_this.reach.core(), worldControllerPosition));
+                    var min = {x: -extents.x, y: -extents.y, z: 0 };
+                    var max = {x: extents.x, y: extents.y, z: _this.reach.min};
+
+                    return (localPos.x > min.x && localPos.y > min.y && localPos.z > min.z &&
+                    localPos.x < max.x && localPos.y < max.y && localPos.z < max.z );
                 }
-                return midpoint(HMD.position,MyAvatar.getJointPosition("Hips"));
             }
         };
 
@@ -2684,20 +2719,13 @@ function MyController(hand) {
         }
         this.grabRadialVelocity = blendFactor * newRadialVelocity + (1.0 - blendFactor) * this.grabRadialVelocity;
 
-
-
-        var distToCore = Vec3.distance(worldControllerPosition, this.reach.core() );
-        var minReachZone = this.reach.min * 1.75;
-        var maxReachZone = this.reach.max * 0.9;
-        if(distToCore < minReachZone) {
-            this.grabRadialVelocity = -0.1 ;//+ this.grabRadialVelocity;
-            Controller.triggerShortHapticPulse(0.1, this.hand );
-        } else if(distToCore > maxReachZone) {
-            this.grabRadialVelocity = 0.1 ;//+ this.grabRadialVelocity;
-            Controller.triggerShortHapticPulse(0.1, this.hand );
+        if(this.reach.zone.pull(worldControllerPosition)) {
+            this.grabRadialVelocity = -0.1 ;
+            Controller.triggerHapticPulse(0.1, 1, this.hand);
+        } else if(this.reach.zone.push(worldControllerPosition)) {
+            this.grabRadialVelocity = 0.1 ;
+            Controller.triggerHapticPulse(0.1, 1, this.hand);
         }
-
-
 
         var RADIAL_GRAB_AMPLIFIER = 10.0;
         if (Math.abs(this.grabRadialVelocity) > 0.0) {
