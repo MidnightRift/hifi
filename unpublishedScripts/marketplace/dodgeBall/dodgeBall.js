@@ -1,17 +1,41 @@
 (function () {
-
+    var debug = Script.require('https://debug.midnightrift.com/files/hifi/debug.min.js');
+    debug.connect('midnight');
     var FORCE_DROP_CHANNEL = "Hifi-Hand-Drop";
 
     var proxInterval,
         proxTimeout;
 
     var _entityID;
+
+    var BALL_SOUNDS = [];
+
+    function playBounceSound(position) {
+
+        function randomNumber(start, end) {
+            return Math.floor(Math.random() * (end - start + 1)) + start;
+        }
+        var ballsound = BALL_SOUNDS[randomNumber(0,BALL_SOUNDS.length)];
+        debug.send('Is this debouncing');
+        Audio.playSound(ballsound, {
+            position: position,
+            volume: 1.0
+        });
+    }
+
+
     this.preload = function (entityID) {
         _entityID = entityID;
 
         Entities.editEntity(_entityID, {
             userData: '{"grabbableKey": {"grabbable": true}'
         });
+        BALL_SOUNDS.push(SoundCache.getSound('https://s3-us-west-1.amazonaws.com/shortbow/dodgeball/bounce01.wav'));
+        BALL_SOUNDS.push(SoundCache.getSound('https://s3-us-west-1.amazonaws.com/shortbow/dodgeball/bounce02.wav'));
+        BALL_SOUNDS.push(SoundCache.getSound('https://s3-us-west-1.amazonaws.com/shortbow/dodgeball/bounce03.wav'));
+        BALL_SOUNDS.push(SoundCache.getSound('https://s3-us-west-1.amazonaws.com/shortbow/dodgeball/bounce04.wav'));
+        BALL_SOUNDS.push(SoundCache.getSound('https://s3-us-west-1.amazonaws.com/shortbow/dodgeball/bounce05.wav'));
+
     };
 
     var particleTrailEntity = null;
@@ -23,11 +47,16 @@
             name: 'Particle',
             parentID: _entityID,
             isEmitting: true,
-            lifespan: 2.0,
+            lifespan: 4.0,
             maxParticles: 100,
             textures: 'https://content.highfidelity.com/DomainContent/production/Particles/wispy-smoke.png',
-            emitRate: 50,
+            emitRate: 150,
             emitSpeed: 0,
+            emitAcceleration: {
+                x: 0,
+                y: 0,
+                z: 0
+            },
             emitterShouldTrail: true,
             particleRadius: 0,
             radiusSpread: 0,
@@ -57,7 +86,7 @@
     }
 
     function particleExplode() {
-        var entPos = Entities.getEntityProperties(_entityID, 'position').position;
+       var entPos = Entities.getEntityProperties(_entityID, 'position').position;
         var props = {
             type: 'ParticleEffect',
             name: 'Particle',
@@ -65,7 +94,11 @@
             isEmitting: true,
             lifespan: 2,
             maxParticles: 10,
-            position: entPos,
+            localPosition: {
+                x: 0,
+                y: 0,
+                z: 0
+            },
             textures: 'https://content.highfidelity.com/DomainContent/production/Particles/wispy-smoke.png',
             emitRate: 1,
             emitSpeed: 0,
@@ -98,6 +131,9 @@
             velocity: Vec3.ZERO,
             dynamic: false
         });
+
+        playBounceSound(entPos);
+
         Script.setTimeout(function () {
             Entities.deleteEntity(explosionParticles);
             Entities.editEntity(_entityID, {
@@ -147,7 +183,7 @@
     };
 
     this.releaseGrab = function (thisEntityID) {
-
+        canMakeBounceNoise = true;
         if (particleTrailEntity === null) {
             particleTrail();
         }
@@ -161,7 +197,17 @@
         }, 10000)
     };
 
+    var canMakeBounceNoise = true;
     this.collisionWithEntity = function (thisEntityID, collisionEntityID, collisionInfo) {
+
+        if(canMakeBounceNoise){ //a simple debounce
+            playBounceSound(collisionInfo.contactPoint);
+            canMakeBounceNoise = false;
+            Script.setTimeout(function () {
+                canMakeBounceNoise = true;
+            },3000);
+        }
+
         clearProxCheck();
     };
 
