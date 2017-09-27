@@ -1,6 +1,4 @@
 (function () {
-    var debug = Script.require('https://debug.midnightrift.com/files/hifi/debug.min.js');
-    debug.connect('midnight');
     var FORCE_DROP_CHANNEL = "Hifi-Hand-Drop";
 
     var proxInterval,
@@ -16,7 +14,6 @@
             return Math.floor(Math.random() * (end - start + 1)) + start;
         }
         var ballsound = BALL_SOUNDS[randomNumber(0,BALL_SOUNDS.length)];
-        debug.send('Is this debouncing');
         Audio.playSound(ballsound, {
             position: position,
             volume: 1.0
