@@ -32,7 +32,8 @@ var CONTOLLER_SCRIPTS = [
     "controllerModules/scaleAvatar.js",
     "controllerModules/hudOverlayPointer.js",
     "controllerModules/mouseHMD.js",
-    "controllerModules/scaleEntity.js"
+    "controllerModules/scaleEntity.js",
+    "controllerModules/highlightObjectInNearGrabRange.js"
 ];
 
 var DEBUG_MENU_ITEM = "Debug defaultScripts.js";

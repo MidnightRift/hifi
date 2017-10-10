@@ -27,7 +27,11 @@ Script.include("/~/system/libraries/controllers.js");
 
         this.isReady = function (controllerData) {
 
-            return makeRunningValues(true, [], []);
+            if (controllerData.nearbyEntityProperties[_this.hand ? RIGHT_HAND : LEFT_HAND][0] || _this.activeHighlightObject !== null) {
+                return makeRunningValues(true, [], []);
+            }
+            return makeRunningValues(false, [], []);
+
         };
 
         this.run = function (controllerData) {
@@ -35,13 +39,18 @@ Script.include("/~/system/libraries/controllers.js");
             //debug.send(JSON.stringify(controllerData.nearbyEntityProperties));
 
             var nearbyEntity,
-                isGrabbable;
+                isGrabbable,
+                maybeEntityOtherHand;
+
             // the closest object to the controller is already computed in the dispacher.
-            nearbyEntity = controllerData.nearbyEntityProperties[_this.hand][0];
+            nearbyEntity = controllerData.nearbyEntityProperties[_this.hand ? RIGHT_HAND : LEFT_HAND][0];
+            maybeEntityOtherHand = controllerData.nearbyEntityProperties[_this.hand ? LEFT_HAND : RIGHT_HAND][0];
 
             //limited to grabbable objects for two reasons. If you are inside of a zone it registers in this list.
             // and i think this feature was meant for objects that can be picked up.
-            isGrabbable = (JSON.parse(entity.userData).grabbableKey.grabbable);
+            if (nearbyEntity) {
+                isGrabbable = (JSON.parse(nearbyEntity.userData).grabbableKey.grabbable);
+            }
 
 
             if(nearbyEntity && isGrabbable) {
@@ -52,7 +61,7 @@ Script.include("/~/system/libraries/controllers.js");
                     Selection.addToSelectedItemsList("contextOverlayHighlightList", 'entity', nearbyEntity.id);
                 } else {
                     if (_this.activeHighlightObject.id !== nearbyEntity.id) {
- //                       debug.send({color:'red'}, 'ID NO MATCH');
+                        //                       debug.send({color:'red'}, 'ID NO MATCH');
                         Selection.removeFromSelectedItemsList("contextOverlayHighlightList", 'entity', _this.activeHighlightObject.id);
                         _this.activeHighlightObject = nearbyEntity;
                         Selection.addToSelectedItemsList("contextOverlayHighlightList", 'entity', nearbyEntity.id);
@@ -61,10 +70,12 @@ Script.include("/~/system/libraries/controllers.js");
 
 
             } else if(_this.activeHighlightObject !== null) {
+                if(!maybeEntityOtherHand || maybeEntityOtherHand && maybeEntityOtherHand.id !== _this.activeHighlightObject.id ) {
+//                    debug.send({color:'red'}, 'NO nearbyEntity and activeHighlightObject is not null', _this.hand ? ["rightHand"] : ["leftHand"]);
+                    Selection.removeFromSelectedItemsList("contextOverlayHighlightList", 'entity', _this.activeHighlightObject.id);
+                    _this.activeHighlightObject = null;
+                }
 
- //               debug.send({color:'red'}, 'NO nearbyEntity and activeHighlightObject is not null', _this.hand ? ["rightHand"] : ["leftHand"]);
-                Selection.removeFromSelectedItemsList("contextOverlayHighlightList", 'entity', _this.activeHighlightObject.id);
-                _this.activeHighlightObject = null;
             }
 
             return makeRunningValues(false, [], []);
