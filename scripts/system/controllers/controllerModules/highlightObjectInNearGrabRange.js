@@ -14,16 +14,15 @@ Script.include("/~/system/libraries/controllers.js");
 //    var debug = Script.require('https://debug.midnightrift.com/files/hifi/debug.min.js');
 //    debug.connect('midnight');
 
-
     function HighlightNearestGrabbableEntity(hand) {
         var _this = this;
         this.hand = hand;
         this.activeHighlightObject = null;
         this.parameters = makeDispatcherModuleParameters(
-            4000, // no idea what a good priority is
+            610, // no idea what a good priority is
             _this.hand ? ["rightHand"] : ["leftHand"],
             [],
-            500); // is half a second to long ?
+            100); // is this even implemented in the dispatcher?
 
         this.isReady = function (controllerData) {
 
@@ -36,27 +35,30 @@ Script.include("/~/system/libraries/controllers.js");
 
         this.run = function (controllerData) {
 
-            //debug.send(JSON.stringify(controllerData.nearbyEntityProperties));
-
             var nearbyEntity,
                 isGrabbable,
+                isCloneable,
                 maybeEntityOtherHand;
 
             // the closest object to the controller is already computed in the dispacher.
             nearbyEntity = controllerData.nearbyEntityProperties[_this.hand ? RIGHT_HAND : LEFT_HAND][0];
             maybeEntityOtherHand = controllerData.nearbyEntityProperties[_this.hand ? LEFT_HAND : RIGHT_HAND][0];
 
-            //limited to grabbable objects for two reasons. If you are inside of a zone it registers in this list.
+            //limited to grabbable and clonable objects for two reasons. If you are inside of a zone it registers in this list.
             // and i think this feature was meant for objects that can be picked up.
             if (nearbyEntity) {
-                isGrabbable = (JSON.parse(nearbyEntity.userData).grabbableKey.grabbable);
+                if(nearbyEntity.userData){
+                    var userData = JSON.parse(nearbyEntity.userData);
+                    if(userData.grabbableKey){
+                        isGrabbable = (userData.grabbableKey.grabbable);
+                        isCloneable = (userData.grabbableKey.cloneable);
+                    }
+                }
             }
 
 
-            if(nearbyEntity && isGrabbable) {
+            if(nearbyEntity && isGrabbable || isCloneable) {
                 if(_this.activeHighlightObject === null) {
-//                    debug.send(JSON.stringify(nearbyEntity));
-//                    debug.send({color:'green'}, 'YES nearbyEntity');
                     _this.activeHighlightObject = nearbyEntity;
                     Selection.addToSelectedItemsList("contextOverlayHighlightList", 'entity', nearbyEntity.id);
                 } else {
@@ -71,7 +73,6 @@ Script.include("/~/system/libraries/controllers.js");
 
             } else if(_this.activeHighlightObject !== null) {
                 if(!maybeEntityOtherHand || maybeEntityOtherHand && maybeEntityOtherHand.id !== _this.activeHighlightObject.id ) {
-//                    debug.send({color:'red'}, 'NO nearbyEntity and activeHighlightObject is not null', _this.hand ? ["rightHand"] : ["leftHand"]);
                     Selection.removeFromSelectedItemsList("contextOverlayHighlightList", 'entity', _this.activeHighlightObject.id);
                     _this.activeHighlightObject = null;
                 }
