@@ -82,7 +82,7 @@ Script.include("/~/system/libraries/controllers.js");
 
             }
 
-            return makeRunningValues(true, [], []);
+            return makeRunningValues(false, [], []); // not sure why but this needs to be false to let the stylus and hands and stuff work
         };
     }
 
