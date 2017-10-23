@@ -74,11 +74,11 @@ Script.include("/~/system/libraries/controllers.js");
                 }
 
             } else if (_this.activeHighlightObject !== null &&
-                maybeEntityOtherHand && maybeEntityOtherHand.id === _this.activeHighlightObject.id) {
+                (maybeEntityOtherHand && maybeEntityOtherHand.id === _this.activeHighlightObject.id)) {
                 _this.activeHighlightObject = null;
 
             } else if (_this.activeHighlightObject !== null &&
-                !maybeEntityOtherHand || maybeEntityOtherHand && maybeEntityOtherHand.id !== _this.activeHighlightObject.id) {
+                (!maybeEntityOtherHand || maybeEntityOtherHand && maybeEntityOtherHand.id !== _this.activeHighlightObject.id)) {
 
                 Selection.removeFromSelectedItemsList("contextOverlayHighlightList", 'entity', _this.activeHighlightObject.id);
                 _this.activeHighlightObject = null;
