@@ -75,6 +75,11 @@ Script.include("/~/system/libraries/controllers.js");
 
 
             } else if (_this.activeHighlightObject !== null) {
+
+                if (maybeEntityOtherHand && maybeEntityOtherHand.id === _this.activeHighlightObject.id) {
+                    _this.activeHighlightObject = null;
+                }
+
                 if (!maybeEntityOtherHand || maybeEntityOtherHand && maybeEntityOtherHand.id !== _this.activeHighlightObject.id) {
                     Selection.removeFromSelectedItemsList("contextOverlayHighlightList", 'entity', _this.activeHighlightObject.id);
                     _this.activeHighlightObject = null;
