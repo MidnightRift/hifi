@@ -42,7 +42,7 @@ Script.include("/~/system/libraries/controllers.js");
             nearbyEntity = controllerData.nearbyEntityProperties[_this.hand ? RIGHT_HAND : LEFT_HAND][0];
             maybeEntityOtherHand = controllerData.nearbyEntityProperties[_this.hand ? LEFT_HAND : RIGHT_HAND][0];
 
-            //limited to grabbable and clonable objects for two reasons. If you are inside of a zone it registers in this list.
+            //limited to grabbable and cloneable objects for two reasons. If you are inside of a zone it registers in this list.
             // and i think this feature was meant for objects that can be picked up.
             if (nearbyEntity) {
                 if (nearbyEntity.userData) {
@@ -73,17 +73,15 @@ Script.include("/~/system/libraries/controllers.js");
                     }
                 }
 
+            } else if (_this.activeHighlightObject !== null &&
+                maybeEntityOtherHand && maybeEntityOtherHand.id === _this.activeHighlightObject.id) {
+                _this.activeHighlightObject = null;
 
-            } else if (_this.activeHighlightObject !== null) {
+            } else if (_this.activeHighlightObject !== null &&
+                !maybeEntityOtherHand || maybeEntityOtherHand && maybeEntityOtherHand.id !== _this.activeHighlightObject.id) {
 
-                if (maybeEntityOtherHand && maybeEntityOtherHand.id === _this.activeHighlightObject.id) {
-                    _this.activeHighlightObject = null;
-                }
-
-                if (!maybeEntityOtherHand || maybeEntityOtherHand && maybeEntityOtherHand.id !== _this.activeHighlightObject.id) {
-                    Selection.removeFromSelectedItemsList("contextOverlayHighlightList", 'entity', _this.activeHighlightObject.id);
-                    _this.activeHighlightObject = null;
-                }
+                Selection.removeFromSelectedItemsList("contextOverlayHighlightList", 'entity', _this.activeHighlightObject.id);
+                _this.activeHighlightObject = null;
 
             }
 
