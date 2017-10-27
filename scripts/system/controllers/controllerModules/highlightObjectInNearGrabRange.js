@@ -16,6 +16,11 @@ Script.include("/~/system/libraries/controllers.js");
         var _this = this;
         this.hand = hand;
         this.activeHighlightObject = null;
+
+        this.getOtherModule = function () {
+            return _this.hand ? leftHighlightNearestGrabbableEntity : rightHighlightNearestGrabbableEntity;
+        };
+
         this.parameters = makeDispatcherModuleParameters(
             610, // no idea what a good priority is
             _this.hand ? ["rightHand"] : ["leftHand"],
@@ -24,23 +29,20 @@ Script.include("/~/system/libraries/controllers.js");
 
         this.isReady = function (controllerData) {
 
-            if (controllerData.nearbyEntityProperties[_this.hand ? RIGHT_HAND : LEFT_HAND][0] || _this.activeHighlightObject !== null) {
+            if (controllerData.nearbyEntityProperties[_this.hand][0] || _this.activeHighlightObject !== null) {
                 return makeRunningValues(true, [], []);
             }
             return makeRunningValues(false, [], []);
-
         };
 
         this.run = function (controllerData) {
 
             var nearbyEntity,
                 isGrabbable,
-                isCloneable,
-                maybeEntityOtherHand;
+                isCloneable;
 
             // the closest object to the controller is already computed in the dispatcher.
-            nearbyEntity = controllerData.nearbyEntityProperties[_this.hand ? RIGHT_HAND : LEFT_HAND][0];
-            maybeEntityOtherHand = controllerData.nearbyEntityProperties[_this.hand ? LEFT_HAND : RIGHT_HAND][0];
+            nearbyEntity = controllerData.nearbyEntityProperties[_this.hand][0];
 
             //limited to grabbable and cloneable objects for two reasons. If you are inside of a zone it registers in this list.
             // and i think this feature was meant for objects that can be picked up.
@@ -60,25 +62,32 @@ Script.include("/~/system/libraries/controllers.js");
                 }
             }
 
+            if (nearbyEntity && (isGrabbable || isCloneable) && _this.activeHighlightObject === null &&
+                (_this.getOtherModule().activeHighlightObject === null ||
+                    (_this.getOtherModule().activeHighlightObject &&
+                        nearbyEntity.id !== _this.getOtherModule().activeHighlightObject.id))) {
 
-            if (nearbyEntity && isGrabbable || isCloneable) {
-                if (_this.activeHighlightObject === null) {
+                _this.activeHighlightObject = nearbyEntity;
+                Selection.addToSelectedItemsList("contextOverlayHighlightList", 'entity', nearbyEntity.id);
+
+            } else if (nearbyEntity && (isGrabbable || isCloneable) && _this.activeHighlightObject !== null &&
+                _this.activeHighlightObject.id !== nearbyEntity.id) {
+
+                Selection.removeFromSelectedItemsList("contextOverlayHighlightList", 'entity', _this.activeHighlightObject.id);
+                if (_this.getOtherModule().activeHighlightObject === null ||
+                    (_this.getOtherModule().activeHighlightObject &&
+                        nearbyEntity.id !== _this.getOtherModule().activeHighlightObject.id)) {
                     _this.activeHighlightObject = nearbyEntity;
                     Selection.addToSelectedItemsList("contextOverlayHighlightList", 'entity', nearbyEntity.id);
                 } else {
-                    if (_this.activeHighlightObject.id !== nearbyEntity.id) {
-                        Selection.removeFromSelectedItemsList("contextOverlayHighlightList", 'entity', _this.activeHighlightObject.id);
-                        _this.activeHighlightObject = nearbyEntity;
-                        Selection.addToSelectedItemsList("contextOverlayHighlightList", 'entity', nearbyEntity.id);
-                    }
+                    _this.activeHighlightObject = null;
                 }
 
             } else if (_this.activeHighlightObject !== null &&
-                (maybeEntityOtherHand && maybeEntityOtherHand.id === _this.activeHighlightObject.id)) {
-                _this.activeHighlightObject = null;
-
-            } else if (_this.activeHighlightObject !== null &&
-                (!maybeEntityOtherHand || maybeEntityOtherHand && maybeEntityOtherHand.id !== _this.activeHighlightObject.id)) {
+                (!nearbyEntity || ( nearbyEntity && !isGrabbable && !isCloneable ) ) &&
+                (_this.getOtherModule().activeHighlightObject === null ||
+                    (_this.getOtherModule().activeHighlightObject &&
+                        _this.activeHighlightObject.id !== _this.getOtherModule().activeHighlightObject.id))) {
 
                 Selection.removeFromSelectedItemsList("contextOverlayHighlightList", 'entity', _this.activeHighlightObject.id);
                 _this.activeHighlightObject = null;
