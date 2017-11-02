@@ -5,8 +5,6 @@
 //  Distributed under the Apache License, Version 2.0.
 //  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
 
-// TODO: find globals list for here.
-
 Script.include("/~/system/libraries/controllerDispatcherUtils.js");
 Script.include("/~/system/libraries/controllers.js");
 
@@ -22,10 +20,10 @@ Script.include("/~/system/libraries/controllers.js");
         };
 
         this.parameters = makeDispatcherModuleParameters(
-            610, // no idea what a good priority is
+            610,
             _this.hand ? ["rightHand"] : ["leftHand"],
-            [], // is this even implemented in the dispatcher?
-            100); // or this
+            [],
+            100);
 
         this.isReady = function (controllerData) {
 
@@ -44,8 +42,8 @@ Script.include("/~/system/libraries/controllers.js");
             // the closest object to the controller is already computed in the dispatcher.
             nearbyEntity = controllerData.nearbyEntityProperties[_this.hand][0];
 
-            //limited to grabbable and cloneable objects for two reasons. If you are inside of a zone it registers in this list.
-            // and i think this feature was meant for objects that can be picked up.
+            //limited to grabbable and cloneable objects, If you are inside of a zone it registers in this list.
+
             if (nearbyEntity) {
                 if (nearbyEntity.userData) {
                     var userData;
@@ -62,25 +60,27 @@ Script.include("/~/system/libraries/controllers.js");
                 }
             }
 
-            if (nearbyEntity && (isGrabbable || isCloneable) && _this.activeHighlightObject === null &&
-                (_this.getOtherModule().activeHighlightObject === null ||
-                    (_this.getOtherModule().activeHighlightObject &&
-                        nearbyEntity.id !== _this.getOtherModule().activeHighlightObject.id))) {
+            if (nearbyEntity && (isGrabbable || isCloneable)) {
+                if (_this.activeHighlightObject === null &&
+                    (_this.getOtherModule().activeHighlightObject === null ||
+                        (_this.getOtherModule().activeHighlightObject &&
+                            nearbyEntity.id !== _this.getOtherModule().activeHighlightObject.id))) {
 
-                _this.activeHighlightObject = nearbyEntity;
-                Selection.addToSelectedItemsList("contextOverlayHighlightList", 'entity', nearbyEntity.id);
-
-            } else if (nearbyEntity && (isGrabbable || isCloneable) && _this.activeHighlightObject !== null &&
-                _this.activeHighlightObject.id !== nearbyEntity.id) {
-
-                Selection.removeFromSelectedItemsList("contextOverlayHighlightList", 'entity', _this.activeHighlightObject.id);
-                if (_this.getOtherModule().activeHighlightObject === null ||
-                    (_this.getOtherModule().activeHighlightObject &&
-                        nearbyEntity.id !== _this.getOtherModule().activeHighlightObject.id)) {
                     _this.activeHighlightObject = nearbyEntity;
                     Selection.addToSelectedItemsList("contextOverlayHighlightList", 'entity', nearbyEntity.id);
-                } else {
-                    _this.activeHighlightObject = null;
+
+                } else if (_this.activeHighlightObject !== null &&
+                    _this.activeHighlightObject.id !== nearbyEntity.id) {
+
+                    Selection.removeFromSelectedItemsList("contextOverlayHighlightList", 'entity', _this.activeHighlightObject.id);
+                    if (_this.getOtherModule().activeHighlightObject === null ||
+                        (_this.getOtherModule().activeHighlightObject &&
+                            nearbyEntity.id !== _this.getOtherModule().activeHighlightObject.id)) {
+                        _this.activeHighlightObject = nearbyEntity;
+                        Selection.addToSelectedItemsList("contextOverlayHighlightList", 'entity', nearbyEntity.id);
+                    } else {
+                        _this.activeHighlightObject = null;
+                    }
                 }
 
             } else if (_this.activeHighlightObject !== null &&
@@ -93,8 +93,7 @@ Script.include("/~/system/libraries/controllers.js");
                 _this.activeHighlightObject = null;
 
             }
-
-            return makeRunningValues(false, [], []); // not sure why but this needs to be false to let the stylus and hands and stuff work
+            return makeRunningValues(false, [], []);
         };
     }
 
@@ -105,10 +104,10 @@ Script.include("/~/system/libraries/controllers.js");
     enableDispatcherModule("leftHighlightNearestGrabbableEntity", leftHighlightNearestGrabbableEntity);
     enableDispatcherModule("rightHighlightNearestGrabbableEntity", rightHighlightNearestGrabbableEntity);
 
-    this.cleanup = function () {
+    function clean() {
         disableDispatcherModule("leftHighlightNearestGrabbableEntity");
         disableDispatcherModule("rightHighlightNearestGrabbableEntity");
-    };
+    }
 
-    Script.scriptEnding.connect(this.cleanup);
+    Script.scriptEnding.connect(clean);
 }());
